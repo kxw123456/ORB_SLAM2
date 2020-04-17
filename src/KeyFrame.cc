@@ -124,7 +124,7 @@ void KeyFrame::AddConnection(KeyFrame *pKF, const int &weight)
 {
     {
         unique_lock<mutex> lock(mMutexConnections);
-        if(!mConnectedKeyFrameWeights.count(pKF))
+        if(!mConnectedKeyFrameWeights.count(pKF))           // .count:查找 map 中 匹配特定key 的 数量
             mConnectedKeyFrameWeights[pKF]=weight;
         else if(mConnectedKeyFrameWeights[pKF]!=weight)
             mConnectedKeyFrameWeights[pKF]=weight;
@@ -139,11 +139,12 @@ void KeyFrame::UpdateBestCovisibles()
 {
     unique_lock<mutex> lock(mMutexConnections);
     vector<pair<int,KeyFrame*> > vPairs;
-    vPairs.reserve(mConnectedKeyFrameWeights.size());
+    vPairs.reserve(mConnectedKeyFrameWeights.size());   //若 vector 更改容量，则为其全部。否则为无
+    // 遍历 所有关键帧，将其插入 vPairs 中，排序。
     for(map<KeyFrame*,int>::iterator mit=mConnectedKeyFrameWeights.begin(), mend=mConnectedKeyFrameWeights.end(); mit!=mend; mit++)
        vPairs.push_back(make_pair(mit->second,mit->first));
 
-    sort(vPairs.begin(),vPairs.end());
+    sort(vPairs.begin(),vPairs.end());      // vPair 升序排序
     list<KeyFrame*> lKFs;
     list<int> lWs;
     for(size_t i=0, iend=vPairs.size(); i<iend;i++)
@@ -152,8 +153,8 @@ void KeyFrame::UpdateBestCovisibles()
         lWs.push_front(vPairs[i].first);
     }
 
-    mvpOrderedConnectedKeyFrames = vector<KeyFrame*>(lKFs.begin(),lKFs.end());
-    mvOrderedWeights = vector<int>(lWs.begin(), lWs.end());    
+    mvpOrderedConnectedKeyFrames = vector<KeyFrame*>(lKFs.begin(),lKFs.end());      // 排序后的 关键帧
+    mvOrderedWeights = vector<int>(lWs.begin(), lWs.end());    // 排序后的 Weights
 }
 
 set<KeyFrame*> KeyFrame::GetConnectedKeyFrames()
